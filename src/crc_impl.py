@@ -18,24 +18,18 @@ def crc32_improved(message:bytearray, poly:int, init:int=0, final_xor:int=0):
     """
     init crc (fixes problem with erroneous insertions/deletions of preprended zeros)
     finial_xor (fixes problem with erroneous insertions/deletions of appended zeros)
-    crc = crc xor byte (has the effect of shifting the message r times, where r is the size of the crc)
+    crc = crc xor (G & (B ^ Cr)) (has the effect of shifting the message r times, where r is the size of the crc)
     """
     bitmask = 0xFFFFFFFF
     crc = init
 
     for byte in message:
         for _ in range(8):
-            b = 0xFFFFFFFF if byte & (1<<7) != 0 else 0
-            divide = 0xFFFFFFFF if (crc & (1<<31)) != 0 else 0
-            xor = poly & (b ^ divide)
-            crc = (crc << 1) ^ xor
+            b = bitmask if byte & (1<<7) != 0 else 0
+            divide = bitmask if (crc & (1<<31)) != 0 else 0
+            crc = (crc << 1) ^ (poly & (b ^ divide))
             byte <<= 1
     return (crc ^ final_xor) & bitmask
-
-
-# Implementation of crc32 with look up table
-# use functools lru cache or something
-def crc32_lut(): pass
 
 if __name__ == "__main__":
 
@@ -49,7 +43,7 @@ if __name__ == "__main__":
     data_crc = data + bytearray([(actual >> 24) & 0xFF,(actual >> 16) & 0xFF,(actual >> 8) & 0xFF,(actual) & 0xFF])
     test_remainder = crc32(data_crc, poly)
 
-    actual_better = crc32_improved(data, poly)
+    actual_better = crc32_improved(data, poly, 0x0)
     data_crc = data + bytearray([(actual_better >> 24) & 0xFF,(actual_better >> 16) & 0xFF,(actual_better >> 8) & 0xFF,(actual_better) & 0xFF])
     better_remainder = crc32(data_crc, poly)
 
