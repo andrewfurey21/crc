@@ -1,3 +1,6 @@
+from functools import lru_cache
+def reverse(n:int):return int('{:032b}'.format(n)[::-1], 2)
+
 # Basic implementation if crc32
 def crc32(message:bytearray, poly:int):
     bitmask = 0xFFFFFFFF
@@ -31,6 +34,23 @@ def crc32_improved(message:bytearray, poly:int, init:int=0, final_xor:int=0):
             byte <<= 1
     return (crc ^ final_xor) & bitmask
 
+@lru_cache
+def create_lut(poly): return [crc32(bytearray([x, 0, 0, 0, 0]), poly) for x in range(256)]
+# Implementation of crc32 with look up table
+def crc32_lut(message:bytearray, poly:int):
+    """
+    Generates a crc with a look up table for improved speed
+    """
+    bitmask = 0xFFFFFFFF
+    crc = 0
+
+    lut = create_lut(poly)
+    for m in message:
+        index = (int(m) ^ (crc >> 24)) & 0xFF
+        crc = lut[index] ^ (crc << 8)
+
+    return crc & bitmask
+
 if __name__ == "__main__":
 
     data= bytearray(b'I love pizza so much!')
@@ -43,9 +63,13 @@ if __name__ == "__main__":
     data_crc = data + bytearray([(actual >> 24) & 0xFF,(actual >> 16) & 0xFF,(actual >> 8) & 0xFF,(actual) & 0xFF])
     test_remainder = crc32(data_crc, poly)
 
-    actual_better = crc32_improved(data, poly, 0x0)
+    actual_better = crc32_improved(data, poly)
     data_crc = data + bytearray([(actual_better >> 24) & 0xFF,(actual_better >> 16) & 0xFF,(actual_better >> 8) & 0xFF,(actual_better) & 0xFF])
     better_remainder = crc32(data_crc, poly)
+
+    actual_lut = crc32_lut(data, poly)
+    data_crc = data + bytearray([(actual_lut >> 24) & 0xFF,(actual_lut >> 16) & 0xFF,(actual_lut >> 8) & 0xFF,(actual_lut) & 0xFF])
+    lut_remainder = crc32(data_crc, poly)
 
     print("Actual Data           :",data)
     print("Data with zeros       :",data_zeros)
@@ -55,3 +79,6 @@ if __name__ == "__main__":
 
     print("CRC32 Better          :",hex(actual_better))
     print("CRC32 Better Remainder:",hex(better_remainder))
+
+    print("CRC32 LUT             :",hex(actual_lut))
+    print("CRC32 LUT Remainder   :",hex(lut_remainder))
