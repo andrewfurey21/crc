@@ -9,10 +9,9 @@ def crc32(message:bytearray, poly:int):
     for byte in message:
         for _ in range(8):
             b = byte & (1<<7) != 0
-            divide = True if (crc & (1<<31) != 0) else False
+            divide = bitmask if (crc & (1<<31) != 0) else 0
             crc = (crc << 1) | b
-            if divide:
-                crc ^= poly
+            crc ^= (poly & divide)
             byte <<= 1
     return crc & bitmask
 
@@ -35,7 +34,7 @@ def crc32_improved(message:bytearray, poly:int, init:int=0, final_xor:int=0):
     return (crc ^ final_xor) & bitmask
 
 @lru_cache
-def create_lut(poly): return [crc32(bytearray([x, 0, 0, 0, 0]), poly) for x in range(256)]
+def create_lut(poly): return [crc32_improved(bytearray([x]), poly) for x in range(256)]
 # Implementation of crc32 with look up table
 def crc32_lut(message:bytearray, poly:int):
     """
@@ -47,7 +46,7 @@ def crc32_lut(message:bytearray, poly:int):
     lut = create_lut(poly)
     for m in message:
         index = (int(m) ^ (crc >> 24)) & 0xFF
-        crc = lut[index] ^ (crc << 8)
+        crc = (crc << 8) ^ lut[index]
 
     return crc & bitmask
 
