@@ -52,7 +52,9 @@ def crc32_lut(message:bytearray, poly:int):
 
 if __name__ == "__main__":
 
-    data= bytearray(b'I love pizza so much!')
+    zero= bytearray(1)
+    print(zero)
+    data= bytearray(b'I love pizza!')
     data_zeros = bytearray(data) + bytearray([0x0, 0x0, 0x0, 0x0])
 
     poly = 0x04C11DB7
@@ -72,6 +74,7 @@ if __name__ == "__main__":
 
     print("Actual Data           :",data)
     print("Data with zeros       :",data_zeros)
+    print("Generator:            :", hex(poly))
 
     print("CRC32 Basic           :",hex(actual))
     print("CRC32 Basic Remainder :",hex(test_remainder))
