@@ -13,7 +13,7 @@ def crc32(message:bytearray, poly:int):
             crc = (crc << 1) | b
             crc ^= (poly & divide)
             byte <<= 1
-    return crc & bitmask
+    return (crc & bitmask)
 
 # Better implementation of crc32, leading/trailing zeros
 def crc32_improved(message:bytearray, poly:int, init:int=0, final_xor:int=0):
@@ -31,7 +31,7 @@ def crc32_improved(message:bytearray, poly:int, init:int=0, final_xor:int=0):
             divide = bitmask if (crc & (1<<31)) != 0 else 0
             crc = (crc << 1) ^ (poly & (b ^ divide))
             byte <<= 1
-    return (crc ^ final_xor) & bitmask
+    return (crc & bitmask) ^ final_xor
 
 @lru_cache
 def create_lut(poly): return [crc32_improved(bytearray([x]), poly) for x in range(256)]

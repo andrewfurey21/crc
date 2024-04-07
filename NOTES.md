@@ -41,7 +41,7 @@ data = zero + bytearray(b'This is a string')
 
 The remainder is identical, but we have a different message. How do we fix this? It turns out its very simple. We append a bunch of nonzero bits to the message. These bits don't get sent over the network or whereever, it's just part of our crc function. This is the init param.
 
-Another problem is if the message we send over ends in a zero, and extra zeros get appended or deleted. If you multiply a number X by Y, where Y is divisible by Z, then X times Y is still divisble by Z. A simple fix to it is adding a number to it, generally all 1's (remember addtion is just xor). This is the final_xor param that we'll add to our function.
+Another problem is if the message we send over ends in a zero, and extra zeros get appended or deleted. If you multiply a number X by Y, where Y is divisible by Z, then X times Y is still divisble by Z. A simple fix to it is adding a number to it, generally all 1's (remember addtion is just xor). This is the final_xor param that we'll add to our function. This will return a constant based on the polynomial returned.
 
 ```python
 data= bytearray(b'I love pizza!')
